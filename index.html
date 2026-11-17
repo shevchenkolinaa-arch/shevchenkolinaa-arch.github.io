@@ -127,6 +127,7 @@ nav .lg{height:34px;width:auto;margin-right:auto;display:block;background:#fff;b
 .hh{background-size:min(88%,560px) auto;background-position:50% 24px;min-height:0;align-items:flex-start;padding:calc(min(88vw,560px)*0.67 + 52px) 0 44px;text-align:center}
 .hh p{max-width:none}
 #home{background:#ffe5d0;color:#2b1a12}.btn.alt2{background:#2b1a12;color:#fff}
+.sign .cons{display:flex;gap:10px;align-items:flex-start;font-size:14px;font-weight:600}.sign .cons input{width:20px;height:20px;padding:0;flex:none;margin-top:2px}.sign .btn:disabled{opacity:.6;cursor:wait}
 </style>
 </head>
 <body>
@@ -192,6 +193,8 @@ nav .lg{height:34px;width:auto;margin-right:auto;display:block;background:#fff;b
 <input id="n" placeholder="Ваше имя" required autocomplete="name">
 <input id="t" type="tel" placeholder="Телефон" required autocomplete="tel">
 <select id="a" aria-label="Возраст ребёнка"><option>3–6 лет</option><option>7–10 лет</option><option>11–16 лет</option></select>
+<input id="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+<label class="cons"><input type="checkbox" id="c" required><span>Согласен(на) на обработку персональных данных для связи по заявке</span></label>
 <button class="btn" type="submit">Отправить заявку</button>
 <div id="ok" role="status"></div>
 </form></div></section>
@@ -212,7 +215,15 @@ function show(k){rows.innerHTML=S[k].map(function(r){return "<tr><td>"+r[0]+"</t
 [].forEach.call(tabs.children,function(b){b.setAttribute("aria-pressed",b.textContent===k)})}
 Object.keys(S).forEach(function(k){var b=document.createElement("button");b.textContent=k;b.onclick=function(){show(k)};tabs.appendChild(b)});
 show(Object.keys(S)[0]);
-document.getElementById("f").onsubmit=function(e){e.preventDefault();document.getElementById("ok").textContent="Спасибо, "+document.getElementById("n").value+"! Мы скоро свяжемся с вами.";this.reset()};
+(function(){var f=document.getElementById('f'),ok=document.getElementById('ok'),btn=f.querySelector('button');
+f.onsubmit=function(e){e.preventDefault();var phone=document.getElementById('t').value.trim();
+if(phone.replace(/\D/g,'').length<10){ok.textContent='Проверьте номер телефона.';return}
+if(document.getElementById('hp').value){return}
+btn.disabled=true;ok.textContent='Отправляем…';
+fetch('https://dima72shef27.app.n8n.cloud/webhook/zayavka',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:document.getElementById('n').value.trim(),phone:phone,age:document.getElementById('a').value,consent:true,page:location.href,sent_at:new Date().toISOString()})})
+.then(function(r){if(!r.ok)throw new Error(r.status);ok.textContent='Спасибо! Мы скоро свяжемся с вами.';f.reset()})
+.catch(function(){ok.textContent='Не удалось отправить заявку. Позвоните нам: 8-914-153-5301.'})
+.then(function(){btn.disabled=false})};})();
 var V={cheer:'cheer',groups:'cheer',schedule:'cheer',coaches:'cheer',photos:'cheer',signup:'cheer',latina:'latina'};
 function route(){var id=location.hash.slice(1),view=V[id]||'home';['home','cheer','latina'].forEach(function(v){document.getElementById(v).hidden=(v!==view)});var el=(id&&id!==view)?document.getElementById(id):null;if(el)el.scrollIntoView();else window.scrollTo(0,0)}
 var lb=document.getElementById('lb');[].forEach.call(document.querySelectorAll('.gal img'),function(i){i.onclick=function(){lb.innerHTML='<img src="'+i.src+'" alt="'+i.alt+'">';lb.hidden=false}});lb.onclick=function(){lb.hidden=true};document.addEventListener('keydown',function(e){if(e.key==='Escape')lb.hidden=true});
